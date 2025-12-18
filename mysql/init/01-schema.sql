@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS projecte_db
+CREATE DATABASE IF NOT EXISTS projecte_db;
 USE projecte_db;
 
 CREATE TABLE users (
@@ -22,4 +22,4 @@ FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 INSERT INTO users (username, email) VALUES ('lluc', 'l.sanchez5@sapalomera.cat'), ('francesc', 'fbarragan@sapalomera.cat');
 INSERT INTO articles (user_id, title, content) VALUES
 (1, 'Primer article PROVA', 'Això és una prova'),
-(2, 'Segon article PROVA', 'Això és una prova's);
+(2, 'Segon article PROVA', 'Això és una prova');
