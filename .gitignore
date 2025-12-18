@@ -1,0 +1,3 @@
+apache/certs/
+.env
+logs/

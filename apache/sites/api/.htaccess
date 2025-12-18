@@ -1,0 +1,13 @@
+DirectoryIndex index.php
+
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^.*$ index.php [QSA,L]
+
+# Permet només JSON i POST a /api/articles
+# S'utilitza per afegir i consultar dades alhora.
+<If "%{REQUEST_URI} =~ m#^/api/articles#">
+Require all granted
+</If>

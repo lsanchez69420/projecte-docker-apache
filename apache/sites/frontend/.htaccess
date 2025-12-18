@@ -1,0 +1,9 @@
+DirectoryIndex index.php index.html
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^.]+)$ $1.html [L]
+
+<Files "secret.html">
+Require ip 127.0.0.1
+</Files>

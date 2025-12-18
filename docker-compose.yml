@@ -1,0 +1,63 @@
+services:
+  apache:
+    build: ./apache
+    container_name: projecte_apache
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./apache/sites:/var/www/html
+      #- ./apache/conf/httpd.conf:/etc/apache2/apache2.conf
+      - ./logs/apache:/var/log/apache2
+    environment:
+      - PHP_HOST=mysql
+      - PHP_PORT=3306
+    networks:
+      - frontend-network
+      - backend-network
+
+  mysql:
+    image: mysql:8.0.35
+    container_name: projecte_mysql
+    env_file: .env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: projecte_redis
+    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: projecte_phpmyadmin
+    environment:
+      - PMA_HOST=mysql
+      - PMA_USER=${MYSQL_USER}
+      - PMA_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "8081:80"
+    networks:
+      - backend-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  frontend-network:
+    driver: bridge
+  backend-network:
+    driver: bridge

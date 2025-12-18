@@ -1,0 +1,53 @@
+# Modificada la imagte d'apline per la de php.
+# Per el que he vist en alpine es pot instal·lar però és molt complicat ;(
+FROM php:apache
+
+LABEL maintainer="l.sanchez5@sapalomera.cat"
+
+RUN docker-php-ext-install pdo pdo_mysql && \
+    pecl install redis && \
+    docker-php-ext-enable redis && \
+    mkdir -p /usr/local/apache2/certs
+
+# Crear certificat SSL (No he trobat forma de fer-ho amb Let's encrypt.)
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /usr/local/apache2/certs/server.key \
+    -out /usr/local/apache2/certs/server.crt \
+    -subj "/C=ES/ST=Catalunya/L=Barcelona/O=ASIX Lab/OU=IT/CN=localhost"
+
+# Ajusta permisos dels certificats
+RUN chmod 644 /usr/local/apache2/certs/server.key && \
+    chmod 644 /usr/local/apache2/certs/server.crt
+
+# Configuració que només funciona amb la imatge d'apache alpine.
+# --------------------------------------------------------------
+# Copia la configuració d'Apache amb SSL
+# COPY conf/httpd.conf /usr/local/apache2/conf/httpd.conf
+
+# COPY conf/vhosts/api.conf /usr/local/apache2/conf/vhosts/api.conf
+# COPY conf/vhosts/frontend.conf /usr/local/apache2/conf/vhosts/frontend.conf
+
+# COPY conf/httpd.conf /etc/apache2/
+
+# Copiem els 'sites' (bind mount també disponible a docker-compose)
+#COPY sites/ /usr/local/apache2/htdocs/
+
+# ---------------------------------------------------------------
+
+# Copiar arxius de configuració Apache.
+COPY conf/vhosts/api.conf /etc/apache2/sites-available/api.conf
+COPY conf/vhosts/frontend.conf /etc/apache2/sites-available/frontend.conf
+
+# Activar vhosts
+RUN a2ensite api.conf frontend.conf
+
+# Activar módulos necesarios
+RUN a2enmod rewrite ssl headers
+
+# Copiar arxius dels vhosts.
+COPY sites/ /var/www/html/ 
+RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
+
+EXPOSE 80 443
+
+CMD ["apache2-foreground"]
